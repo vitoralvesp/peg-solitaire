@@ -1,30 +1,5 @@
 #include <stdio.h>
 
-/* Funcao desnecessaria??*/
-/*
-//isWrongPlay(matrix[7][7], posicao X, posicao Y) --> Retorna valor booelano
-indicando se eh uma jogada valida ou nao
-
-int isWrongPlay(int m[7][7], int posX, int posY){
-
-  //Vendo se existem nao pinos que possam pular para a posicao analisada
-  if((posY-2 < 0 || m[posX][posY-2]!=1) &&
-     (posY+2 > 6 || m[posX][posY+2]!=1) &&
-     (posX-2 < 0 || m[posX-2][posY]!=1)&&
-     (posX+2 > 6 || m[posX+2][posY]!=1)){ return 1;}
-
-  //Vendo se nao existem pinos para serem comidos
-  else if(m[posX][posY-1]!=1&&
-          m[posX][posY+1]!=1 &&
-          m[posX-1][posY]!=1&&
-          m[posX+1][posY]!=1){ return 1;}
-
-  //Caso jogada valida
-  else return 0;
-
-}
-*/
-
 // show(matriz) --> demonstra o conteúdo da matriz
 void show(int mtrx[7][7]) {
 
@@ -74,22 +49,22 @@ int gameOver(int m[7][7]) {
   return 1;
 }
 
-// changePin(matriz, codigo, posição x, posição y) --> realiza a jogada
+// movePin(matriz, codigo, posição x, posição y) --> realiza a jogada
 // solicitada e retorna um valor booleano se foi concluida(1) ou nao(0)
-int changePin(int m[7][7], char playCode, int *posY, int *posX) {
+int movePin(int m[7][7], char playCode, int posY, int posX) {
 
   // Caso jogada vertical para cima
   if (playCode == 'u') {
-    printf("Posicao atual: (%d,%d)\n", *posX, *posY);
+    printf("Posicao atual: (%d,%d)\n", posX, posY);
     printf("Jogada: %c\n", playCode);
     // Posicao fora do tabuleiro
-    if (*posY - 2 < 0) {
+    if (posY - 2 < 0) {
       printf("DEU RUIM em %c: posicao fora!\n", playCode);
       return 0;
     }
 
     // Nao existir pino que ira comer e pino que sera comido
-    else if (m[*posY - 2][*posX] != 1 || m[*posY - 1][*posX] != 1) {
+    else if (m[posY - 2][posX] != 1 || m[posY - 1][posX] != 1) {
       printf("DEU RUIM em %c: nao tem pinos suficientes!\n", playCode);
       return 0;
     }
@@ -97,117 +72,158 @@ int changePin(int m[7][7], char playCode, int *posY, int *posX) {
     // Caso valido: fazer a jogada
     else {
 
-      m[*posY][*posX] = 1;     // Espaço vazio recebe o pino
-      m[*posY - 1][*posX] = 0; // Pino removido
-      m[*posY - 2][*posX] = 0; // Posicao anterior do pino fica vazia
-      *posY = *posY - 1;
+      m[posY][posX] = 1;     // Espaço vazio recebe o pino
+      m[posY - 1][posX] = 0; // Pino removido
+      m[posY - 2][posX] = 0; // Posicao anterior do pino fica vazia
+      posY = posY - 1;
     }
 
     // Caso jogada vertical para baixo
   } else if (playCode == 'd') {
-    printf("Posicao atual: (%d,%d)\n", *posX, *posY);
+    printf("Posicao atual: (%d,%d)\n", posX, posY);
     printf("Jogada: %c\n", playCode);
-    
-    if (*posY + 2 > 6) {
+
+    if (posY + 2 > 6) {
       printf("DEU RUIM em %c: posicao fora!\n", playCode);
       return 0;
     }
 
     // Nao existir pino que ira comer e pino que sera comido
-    else if (m[*posY + 2][*posX] != 1 || m[*posY + 1][*posX] != 1) {
+    else if (m[posY + 2][posX] != 1 || m[posY + 1][posX] != 1) {
       printf("DEU RUIM em %c: nao tem pinos suficientes!\n", playCode);
       return 0;
-      
+
     } else {
-      m[*posY][*posX] = 1;     // Espaço vazio recebe o pino
-      m[*posY + 1][*posX] = 0; // Pino removido
-      m[*posY + 2][*posX] = 0; // Posicao anterior do pino fica vazia
-      *posY = *posY + 1;
+      m[posY][posX] = 1;     // Espaço vazio recebe o pino
+      m[posY + 1][posX] = 0; // Pino removido
+      m[posY + 2][posX] = 0; // Posicao anterior do pino fica vazia
+      posY = posY + 1;
     }
 
     // Caso jogada vertical para esquerda
   } else if (playCode == 'l') {
-    printf("Posicao atual: (%d,%d)\n", *posX, *posY);
+    printf("Posicao atual: (%d,%d)\n", posX, posY);
     printf("Jogada: %c\n", playCode);
-    
-    if (*posX - 2 < 0) {
+
+    if (posX - 2 < 0) {
       printf("DEU RUIM em %c: posicao fora!\n", playCode);
       return 0;
     }
 
     // Nao existir pino que ira comer e pino que sera comido
-    else if (m[*posY][*posX - 2] != 1 || m[*posY][*posX - 1] != 1) {
+    else if (m[posY][posX - 2] != 1 || m[posY][posX - 1] != 1) {
       printf("DEU RUIM em %c: nao tem pinos suficientes!\n", playCode);
       return 0;
-      
+
     } else {
 
-      m[*posY][*posX] = 1;     // Espaço vazio recebe o pino
-      m[*posY][*posX - 1] = 0; // Pino removido
-      m[*posY][*posX - 2] = 0; // Posicao anterior do pino fica vazia
-      *posX = *posX - 1;
+      m[posY][posX] = 1;     // Espaço vazio recebe o pino
+      m[posY][posX - 1] = 0; // Pino removido
+      m[posY][posX - 2] = 0; // Posicao anterior do pino fica vazia
+      posX = posX - 1;
     }
 
     // Caso jogada horizontal para a direita
   } else {
-    printf("Posicao atual: (%d,%d)\n", *posX, *posY);
+    printf("Posicao atual: (%d,%d)\n", posX, posY);
     printf("Jogada: %c\n", playCode);
-    
-    if (*posX + 2 > 6) {
+
+    if (posX + 2 > 6) {
       printf("DEU RUIM em %c: posicao fora!\n", playCode);
       return 0;
     }
 
     // Nao existir pino que ira comer e pino que sera comido
-    else if (m[*posY][*posX + 2] != 1 || m[*posY][*posX + 1] != 1) {
+    else if (m[posY][posX + 2] != 1 || m[posY][posX + 1] != 1) {
       printf("DEU RUIM em %c: nao tem pinos suficientes!\n", playCode);
       return 0;
-      
+
     } else {
 
-      m[*posY][*posX] = 1;     // Espaço vazio recebe o pino
-      m[*posY][*posX + 1] = 0; // Pino removido
-      m[*posY][*posX + 2] = 0; // Posicao anterior do pino fica vazia
-      *posX = *posX + 1;
+      m[posY][posX] = 1;     // Espaço vazio recebe o pino
+      m[posY][posX + 1] = 0; // Pino removido
+      m[posY][posX + 2] = 0; // Posicao anterior do pino fica vazia
+      posX = posX + 1;
     }
   }
   return 1;
+}
+
+// isWrongPlay(matriz, matriz de espaços) -> analisa se existe alguma jogada
+// possivel na atual
+//  configuracao da matriz
+int isWrongPlay(int m[7][7], int spaces[32][2], int size) {
+  for (int idx = 0; idx < size; idx++) {
+    int y = spaces[idx][0];
+    int x = spaces[idx][1];
+    if (y - 2 > 0 && m[y - 2][x] == 1 && m[y - 1][x] == 1)
+      return 0; // para cima
+    else if (y + 2 > 0 && m[y + 2][x] == 1 && m[y + 1][x] == 1)
+      return 0; // para baixo
+    else if (x - 2 > 0 && m[y][x - 2] == 1 && m[y][x - 1] == 1)
+      return 0; // para esquerda
+    else if (x + 2 > 0 && m[y][x + 2] == 1 && m[y][x + 1] == 1)
+      return 0; // para direita
+  }
+  return 1;
+}
+
+// getSpaces(matriz) -> Retorna uma matriz com as coordenadas dos espaços
+int getSpaces(int m[7][7], int spaces[][2]) {
+  int idx = 0;
+  for (int i = 0; i < 7; i++) {
+    for (int j = 0; j < 7; j++) {
+      if (m[i][j] == 0) {
+        spaces[idx][0] = i;
+        spaces[idx][1] = j;
+        idx++;
+      }
+    }
+  }
+  return idx;
 }
 
 // play(matriz, posição x, posição y, jogada, contador) --> Realiza as jogadas
 // recursivamente, ate finalizar o jogo
 void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
           int *counter) {
-  //Caso so reste 1
+  int spaces[32][2];
+  int tam = getSpaces(m, spaces);
+  printf("Espaços = %d\n",tam);
+  // Caso so reste 1
   if (gameOver(m)) {
     show(m);
     *counter = 31;
     printf("FIM DE JOGO!!\n");
 
-  //Caso da jogada invalida ou passar de 31 jogadas
-  } else if (*counter > 31 || !changePin(m, playCode, &y, &x)) {
-    if (*counter > 31 || playCode != 'r')
-      return;
-    else {
-      printf("Retornando ao anterior!\n");
-      copy(lastM, m);
-      show(m);
-    }
+    // Caso de passar de 31 jogadas
+  } else if (*counter > 31)
+    return;
+    
+  else if (isWrongPlay(m, spaces, tam)){
+    //printf("Retornando para o anterior!\n");
+    copy(lastM, m);
+    *counter = *counter -1;
+    //show(m);
   }
+
+  else if(!movePin(m,playCode, y, x)) return;
 
   else {
     *counter = *counter + 1;
-    // printf("Contagem = %d\n", *counter);
+    //printf("Contagem = %d\n", *counter);
     show(m);
-    printf("Jogada Válida! salvando...\n");
-    copy(m, lastM);
-    printf("last!--------------------\n");
-    show(lastM);
-    printf("--------------------\n");
-    play(m, lastM, y, x, 'u', counter);
-    play(m, lastM, y, x, 'l', counter);
-    play(m, lastM, y, x, 'd', counter);
-    play(m, lastM, y, x, 'r', counter);
+    // printf("Jogada Válida! salvando...\n");
+    // copy(m, lastM);
+    // printf("last!--------------------\n");
+    // show(lastM);
+    // printf("--------------------\n");
+    for(int idx = 0; idx < tam; idx++){
+      play(m, lastM, spaces[idx][0], spaces[idx][1], 'u', counter);
+      play(m, lastM, spaces[idx][0], spaces[idx][1], 'l', counter);
+      play(m, lastM, spaces[idx][0], spaces[idx][1], 'd', counter);
+      play(m, lastM, spaces[idx][0], spaces[idx][1], 'r', counter);
+    }
   }
 }
 
@@ -220,12 +236,15 @@ int main() {
                     {1, 1, 1, 1, 1, 1, 1},     {1, 1, 1, 0, 1, 1, 1},
                     {1, 1, 1, 1, 1, 1, 1},     {-1, -1, 1, 1, 1, -1, -1},
                     {-1, -1, 1, 1, 1, -1, -1}};
-  int lastMtrx[7][7];
-  copy(mtrx, lastMtrx);
+
   show(mtrx);
 
+  int lastMtrx[7][7];
+  copy(mtrx, lastMtrx);
+  // show(mtrx);
+
   int posX = 3, posY = 3, contador = 0;
- 
+
   play(mtrx,lastMtrx, posY, posX, 'u', &contador);
   if(contador >= 31) printf("\n\nJogo encerrado por excesso de tentativas!!\n\n");
 
