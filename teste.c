@@ -168,6 +168,26 @@ int isWrongPlay(int m[7][7], int spaces[32][2], int size) {
   return 1;
 }
 
+void revert_play(int m[7][7], char lastCode, int y, int x){
+  if(lastCode == 'u'){
+      m[y-2][x] = 1;
+      m[y-1][x] =1;
+      m[y][x]=0;
+  }else if(lastCode == 'd'){
+      m[y+2][x] = 1;
+      m[y+1][x] =1;
+      m[y][x]=0;
+  }else if(lastCode == 'l'){
+      m[y][x-2] = 1;
+      m[y][x-1] =1;
+      m[y][x]=0;
+  }else{
+      m[y][x+2] = 1;
+      m[y][x+1] =1;
+      m[y][x]=0;
+  }
+}
+
 // getSpaces(matriz) -> Retorna uma matriz com as coordenadas dos espaços
 int getSpaces(int m[7][7], int spaces[][2]) {
   int idx = 0;
@@ -185,7 +205,7 @@ int getSpaces(int m[7][7], int spaces[][2]) {
 
 // play(matriz, posição x, posição y, jogada, contador) --> Realiza as jogadas
 // recursivamente, ate finalizar o jogo
-void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
+void play(int m[7][7],char lastCode, int y, int x, char playCode,
           int *counter) {
   int spaces[32][2];
   int tam = getSpaces(m, spaces);
@@ -197,12 +217,12 @@ void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
     printf("FIM DE JOGO!!\n");
 
     // Caso de passar de 31 jogadas
-  } else if (*counter > 31)
+  } else if (*counter > 31 || isWrongPlay(m,spaces,tam))
     return;
     
   else if (isWrongPlay(m, spaces, tam)){
     //printf("Retornando para o anterior!\n");
-    copy(lastM, m);
+    revert_play(m,lastCode,y,x);
     *counter = *counter -1;
     //show(m);
   }
@@ -211,6 +231,7 @@ void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
 
   else {
     *counter = *counter + 1;
+    char aux = playCode;
     //printf("Contagem = %d\n", *counter);
     show(m);
     // printf("Jogada Válida! salvando...\n");
@@ -219,10 +240,10 @@ void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
     // show(lastM);
     // printf("--------------------\n");
     for(int idx = 0; idx < tam; idx++){
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'u', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'l', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'd', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'r', counter);
+      play(m, aux, spaces[idx][0], spaces[idx][1], 'u', counter);
+      play(m, aux, spaces[idx][0], spaces[idx][1], 'l', counter);
+      play(m, aux, spaces[idx][0], spaces[idx][1], 'd', counter);
+      play(m, aux, spaces[idx][0], spaces[idx][1], 'r', counter);
     }
   }
 }
@@ -239,13 +260,12 @@ int main() {
 
   show(mtrx);
 
-  int lastMtrx[7][7];
-  copy(mtrx, lastMtrx);
+  
   // show(mtrx);
 
   int posX = 3, posY = 3, contador = 0;
 
-  play(mtrx,lastMtrx, posY, posX, 'u', &contador);
+  play(mtrx,'p', posY, posX, 'u', &contador);
   if(contador >= 31) printf("\n\nJogo encerrado por excesso de tentativas!!\n\n");
 
   return 0;
