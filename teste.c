@@ -75,7 +75,7 @@ int movePin(int m[7][7], char playCode, int posY, int posX) {
       m[posY][posX] = 1;     // Espaço vazio recebe o pino
       m[posY - 1][posX] = 0; // Pino removido
       m[posY - 2][posX] = 0; // Posicao anterior do pino fica vazia
-      posY = posY - 1;
+      //posY = posY - 1;
     }
 
     // Caso jogada vertical para baixo
@@ -97,7 +97,7 @@ int movePin(int m[7][7], char playCode, int posY, int posX) {
       m[posY][posX] = 1;     // Espaço vazio recebe o pino
       m[posY + 1][posX] = 0; // Pino removido
       m[posY + 2][posX] = 0; // Posicao anterior do pino fica vazia
-      posY = posY + 1;
+      //posY = posY + 1;
     }
 
     // Caso jogada vertical para esquerda
@@ -120,7 +120,7 @@ int movePin(int m[7][7], char playCode, int posY, int posX) {
       m[posY][posX] = 1;     // Espaço vazio recebe o pino
       m[posY][posX - 1] = 0; // Pino removido
       m[posY][posX - 2] = 0; // Posicao anterior do pino fica vazia
-      posX = posX - 1;
+      //posX = posX - 1;
     }
 
     // Caso jogada horizontal para a direita
@@ -143,11 +143,48 @@ int movePin(int m[7][7], char playCode, int posY, int posX) {
       m[posY][posX] = 1;     // Espaço vazio recebe o pino
       m[posY][posX + 1] = 0; // Pino removido
       m[posY][posX + 2] = 0; // Posicao anterior do pino fica vazia
-      posX = posX + 1;
+      //posX = posX + 1;
     }
   }
   return 1;
 }
+
+// movePin(matriz, codigo, posição x, posição y) --> realiza a jogada
+// solicitada e retorna um valor booleano se foi concluida(1) ou nao(0)
+void revertPlay(int m[7][7], char playCode, int posY, int posX) {
+
+  // Caso jogada vertical para cima
+  if (playCode == 'u') {
+      if(m[posY][posX]==1)m[posY][posX] = 0;     
+      if(posY-1>0 && m[posY - 1][posX]==0)m[posY - 1][posX] = 1; 
+      if(posY-2>0 && m[posY - 2][posX]==0)m[posY - 2][posX] = 1; 
+    }
+
+    // Caso jogada vertical para baixo
+    else if (playCode == 'd') {
+    
+      if(m[posY][posX]==1)m[posY][posX] = 0;     
+      if(posY+1<6 && m[posY + 1][posX]==0)m[posY + 1][posX] = 1; 
+      if(posY+2<6 && m[posY + 2][posX]==0)m[posY + 2][posX] = 1; 
+      //posY = posY + 1;
+    
+
+    // Caso jogada vertical para esquerda
+  } else if (playCode == 'l') {
+      if(m[posY][posX]==1)m[posY][posX] = 0;     
+      if(posX-1>0 && m[posY][posX-1]==0)m[posY][posX - 1] = 1; 
+      if(posX-2>0 && m[posY][posX-2]==0)m[posY][posX - 2] = 1; 
+
+    // Caso jogada horizontal para a direita
+  } else {
+      if(m[posY][posX]==1)m[posY][posX] = 0;     
+      if(posX+1<6 && m[posY][posX+1]==0)m[posY][posX + 1] = 1; 
+      if(posX+2<6 && m[posY][posX+2]==0)m[posY][posX + 2] = 1; 
+      //posX = posX + 1;
+    
+  }
+}
+
 
 // isWrongPlay(matriz, matriz de espaços) -> analisa se existe alguma jogada
 // possivel na atual
@@ -183,10 +220,12 @@ int getSpaces(int m[7][7], int spaces[][2]) {
   return idx;
 }
 
+
+
 // play(matriz, posição x, posição y, jogada, contador) --> Realiza as jogadas
 // recursivamente, ate finalizar o jogo
-void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
-          int *counter) {
+void play(int m[7][7], int y, int x, char playCode,
+          int *counter, int *valid) {
   int spaces[32][2];
   int tam = getSpaces(m, spaces);
   printf("Espaços = %d\n",tam);
@@ -196,22 +235,34 @@ void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
     *counter = 31;
     printf("FIM DE JOGO!!\n");
 
-    // Caso de passar de 31 jogadas
-  } else if (*counter > 31)
-    return;
     
-  else if (isWrongPlay(m, spaces, tam)){
-    //printf("Retornando para o anterior!\n");
-    copy(lastM, m);
-    *counter = *counter -1;
-    //show(m);
-  }
+  } 
+  
+  // Caso de passar de 31 jogadas
+  else if (*counter > 31 || *counter<0)
+    return;
 
-  else if(!movePin(m,playCode, y, x)) return;
+  else if(!movePin(m,playCode, y, x)){
+    // printf("#########JOGADA INVALIDA!!#########\n");
+    // show(m);
+    // printf("###################################\n");
+    if (isWrongPlay(m, spaces, tam)){
+    *valid=1;
+    return;
+    //printf("Retornando para o anterior!\n");
+    //copy(lastM, m);
+    //show(m);
+    }
+    printf("######WRONG PLAY#########\n");
+    *valid=0;
+    return;
+  } 
+    
+  
 
   else {
     *counter = *counter + 1;
-    //printf("Contagem = %d\n", *counter);
+    printf("Contagem = %d\n", *counter);
     show(m);
     // printf("Jogada Válida! salvando...\n");
     // copy(m, lastM);
@@ -219,10 +270,38 @@ void play(int m[7][7], int lastM[7][7], int y, int x, char playCode,
     // show(lastM);
     // printf("--------------------\n");
     for(int idx = 0; idx < tam; idx++){
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'u', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'l', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'd', counter);
-      play(m, lastM, spaces[idx][0], spaces[idx][1], 'r', counter);
+      play(m, spaces[idx][0], spaces[idx][1], 'u', counter, valid);
+      if(*valid==1) {
+        revertPlay(m,'u',spaces[idx][0], spaces[idx][1]);
+        printf("Revertendo jogada %c\n",playCode);
+        show(m);
+        *counter = *counter-1;
+
+      }
+      play(m, spaces[idx][0], spaces[idx][1], 'l', counter,valid);
+      if(*valid==1) {
+        revertPlay(m,'l',spaces[idx][0], spaces[idx][1]);
+        printf("Revertendo jogada %c\n",playCode);
+        show(m);
+        *counter = *counter-1;
+
+      }
+      play(m, spaces[idx][0], spaces[idx][1], 'd', counter,valid);
+      if(*valid==1) {
+        revertPlay(m,'d',spaces[idx][0], spaces[idx][1]);
+        printf("Revertendo jogada %c\n",playCode);
+        show(m);
+        *counter = *counter-1;
+
+      }
+      play(m, spaces[idx][0], spaces[idx][1], 'r', counter,valid);
+      if(*valid==1) {
+        revertPlay(m,'r',spaces[idx][0], spaces[idx][1]);
+        printf("Revertendo jogada %c\n",playCode);
+        show(m);
+        *counter = *counter-1;
+
+      }
     }
   }
 }
@@ -239,13 +318,13 @@ int main() {
 
   show(mtrx);
 
-  int lastMtrx[7][7];
-  copy(mtrx, lastMtrx);
+  // int lastMtrx[7][7];
+  // copy(mtrx, lastMtrx);
   // show(mtrx);
 
-  int posX = 3, posY = 3, contador = 0;
+  int posX = 3, posY = 3, contador = 0, isChecked=1;
 
-  play(mtrx,lastMtrx, posY, posX, 'u', &contador);
+  play(mtrx, posY, posX, 'u', &contador,&isChecked);
   if(contador >= 31) printf("\n\nJogo encerrado por excesso de tentativas!!\n\n");
 
   return 0;
