@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 
 // show(matriz) --> demonstra o conteúdo da matriz
 void show(int mtrx[7][7]) {
@@ -227,17 +228,18 @@ int getSpaces(int m[7][7], int spaces[][2]) {
 int play(int m[7][7], int y, int x, char playCode,int counter) {
   int spaces[32][2];
   int tam;
+  //if(ehFim) printf("Counter = %d\n",counter);
   //printf("Contador = %d\n",counter);
   //printf("Espacos = %d\n",tam);
   // Caso so reste 1
-  if (gameOver(m)) {
-    //show(m);
-    return 1;   
-  } 
+  
   
   // Caso de passar de 31 jogadas
-  else if (counter >= 31)
+  if (counter >= 31){
+    if(counter == 31) printf("CONCLUIDO!!!\n");
     return 1;
+  }
+   
 
   //Caso nao consiga fazer uma jogada
   else if(!movePin(m,playCode, y, x)){
@@ -247,7 +249,9 @@ int play(int m[7][7], int y, int x, char playCode,int counter) {
   else {
     tam = getSpaces(m, spaces);
     int aux;
-    // printf("Contagem = %d\n", *counter);
+    printf("Contagem = %d\n", counter+1);
+    show(m);
+    sleep(1);
     // printf("Posicao atual: (ln %d,col %d)\n", y, x);
     // printf("Jogada: %c\n", playCode);
     //show(m);
@@ -277,7 +281,8 @@ int play(int m[7][7], int y, int x, char playCode,int counter) {
         revertPlay(m,'r',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
     }
-    return -1;
+    if(gameOver(m) == 0)return -1;
+    else return 1;
   }
 }
 
