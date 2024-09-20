@@ -1,5 +1,82 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
+#define MAX_MATRIZES (31)
+#define TAMANHO_MATRIZ (7)
+
+//---------PILHA---------
+typedef struct {
+    int matrizes[MAX_MATRIZES][TAMANHO_MATRIZ][TAMANHO_MATRIZ]; 
+    int contador; 
+} Pilha;
+
+// Criar uma pilha 
+Pilha* create() {
+    Pilha *p = (Pilha*) malloc(sizeof(Pilha));
+    if (p == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(1);
+    }
+    p->contador = -1; // Pilha começa vazia
+    return p;
+}
+
+//Destruir a pilha (liberar memória)
+void destroy(Pilha *p) {
+    if (p != NULL) {
+        free(p);
+    }
+}
+
+// Verificar se a pilha esta vazia
+int isEmpty(Pilha *p) {
+    return p->contador == -1;
+}
+
+// Verificar se a pilha está cheia
+int isFull(Pilha *p) {
+    return p->contador == MAX_MATRIZES - 1;
+}
+
+// Empilhar uma matriz 
+void push(Pilha *p, int matriz[TAMANHO_MATRIZ][TAMANHO_MATRIZ]) {
+    if (isFull(p)) {
+        printf("Erro: Pilha cheia.\n");
+        return;
+    }
+    p->contador++;
+    for (int i = 0; i < TAMANHO_MATRIZ; i++) {
+        for (int j = 0; j < TAMANHO_MATRIZ; j++) {
+            p->matrizes[p->contador][i][j] = matriz[i][j];
+        }
+    }
+}
+
+//Desempilhar uma matriz
+void pop(Pilha *p) {
+    if (isEmpty(p)) {
+        printf("Erro: Pilha vazia.\n");
+        return;
+    }
+    p->contador--;
+}
+
+// Acessar a matriz no topo da pilha
+int (*top(Pilha *p))[TAMANHO_MATRIZ] {
+    if (isEmpty(p)) {
+        printf("Erro: Pilha vazia.\n");
+        return NULL;
+    }
+    return p->matrizes[p->contador];
+}
+
+int size(Pilha *p) {
+  return p -> contador+1;
+}
+
+
+//-----------------------
 
 // show(matriz) --> demonstra o conteúdo da matriz
 void show(int mtrx[7][7]) {
@@ -225,12 +302,19 @@ int getSpaces(int m[7][7], int spaces[][2]) {
 
 // play(matriz, posição x, posição y, jogada, contador) --> Realiza as jogadas
 // recursivamente, ate finalizar o jogo
-int play(int m[7][7], int y, int x, char playCode,int counter) {
+int play(int m[7][7], Pilha *p, int y, int x, char playCode) {
   int spaces[32][2];
   int tam;
   
-  // Caso de passar de 31 jogadas
-  if (counter >= 31){
+  // Fim de jogo valido
+  if (gameOver(m)){
+    printf("Total = %d\n",size(p));
+    while(!isEmpty(p)){
+      printf("-----------------------\n");
+      show(top(p));
+      printf("-----------------------\n");
+      pop(p);      
+    }
     return 1;
   }
    
@@ -242,33 +326,38 @@ int play(int m[7][7], int y, int x, char playCode,int counter) {
       
   //Jogada valida
   else {
+    push(p,m);
     tam = getSpaces(m, spaces);
     int aux;
 
     //Para cada espaco, tenta executar uma das 4 jogadas possiveis
     //Se foi possivel, mas gera um problema no futuro, reverte a jogada
     for(int idx = 0; idx < tam; idx++){
-      aux = play(m, spaces[idx][0], spaces[idx][1], 'u', counter+1);
+      aux = play(m, p,spaces[idx][0], spaces[idx][1], 'u');
       if(aux == -1){
         revertPlay(m,'u',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
       
-      aux = play(m, spaces[idx][0], spaces[idx][1], 'l', counter+1);
+      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'l');
       if(aux == -1){
         revertPlay(m,'l',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
       
-      aux = play(m, spaces[idx][0], spaces[idx][1], 'd', counter+1);
+      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'd');
       if(aux == -1){
         revertPlay(m,'d',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
       
-      aux = play(m, spaces[idx][0], spaces[idx][1], 'r', counter+1);
+      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'r');
       if(aux == -1){
         revertPlay(m,'r',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
     }
-    if(gameOver(m) == 0)return -1; // Fim de jogo invalido
+    // Fim de jogo invalido
+    if(gameOver(m) == 0){
+      pop(p);
+      return -1; 
+    }
     else return 1; // Fim de jogo valido
   }
 }
@@ -285,17 +374,21 @@ int main() {
                     {1, 1, 1, 1, 1, 1, 1},     
                     {-1, -1, 1, 1, 1, -1, -1},
                     {-1, -1, 1, 1, 1, -1, -1}};
+  Pilha *p = create();
 
-  
-  show(mtrx);
+  push(p,mtrx);
+
+  show(top(p));
+  // int c = size(p);
+  // printf("Antes: %d\n",c);
+  // pop(p);
+  // c = size(p);
+  // printf("Depois: %d\n",c);
 
   int posX = 3, posY = 3;
 
   //Caso encerre corretamente, exiba
-  if(play(mtrx, posY, posX, 'u',0) == 1){
-    show(mtrx);
-    printf("FIM DE JOGO!!!\n");
-  }
+  play(mtrx,p,posY,posX,'u');
     
   return 0;
 }
