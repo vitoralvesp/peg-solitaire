@@ -228,15 +228,9 @@ int getSpaces(int m[7][7], int spaces[][2]) {
 int play(int m[7][7], int y, int x, char playCode,int counter) {
   int spaces[32][2];
   int tam;
-  //if(ehFim) printf("Counter = %d\n",counter);
-  //printf("Contador = %d\n",counter);
-  //printf("Espacos = %d\n",tam);
-  // Caso so reste 1
-  
   
   // Caso de passar de 31 jogadas
   if (counter >= 31){
-    if(counter == 31) printf("CONCLUIDO!!!\n");
     return 1;
   }
    
@@ -246,20 +240,13 @@ int play(int m[7][7], int y, int x, char playCode,int counter) {
     return 0;
   } 
       
+  //Jogada valida
   else {
     tam = getSpaces(m, spaces);
     int aux;
-    printf("Contagem = %d\n", counter+1);
-    show(m);
-    sleep(1);
-    // printf("Posicao atual: (ln %d,col %d)\n", y, x);
-    // printf("Jogada: %c\n", playCode);
-    //show(m);
-    // printf("Jogada Válida! salvando...\n");
-    // copy(m, lastM);
-    // printf("last!--------------------\n");
-    // show(lastM);
-    // printf("--------------------\n");
+
+    //Para cada espaco, tenta executar uma das 4 jogadas possiveis
+    //Se foi possivel, mas gera um problema no futuro, reverte a jogada
     for(int idx = 0; idx < tam; idx++){
       aux = play(m, spaces[idx][0], spaces[idx][1], 'u', counter+1);
       if(aux == -1){
@@ -281,8 +268,8 @@ int play(int m[7][7], int y, int x, char playCode,int counter) {
         revertPlay(m,'r',spaces[idx][0], spaces[idx][1]);
       }else if(aux==1) break;
     }
-    if(gameOver(m) == 0)return -1;
-    else return 1;
+    if(gameOver(m) == 0)return -1; // Fim de jogo invalido
+    else return 1; // Fim de jogo valido
   }
 }
 
@@ -301,14 +288,14 @@ int main() {
 
   
   show(mtrx);
- 
-  // int lastMtrx[7][7];
-  // copy(mtrx, lastMtrx);
-  // show(mtrx);
 
-  int posX = 3, posY = 3, isChecked=1;
+  int posX = 3, posY = 3;
 
-  if(play(mtrx, posY, posX, 'u',0) == 1)
+  //Caso encerre corretamente, exiba
+  if(play(mtrx, posY, posX, 'u',0) == 1){
     show(mtrx);
+    printf("FIM DE JOGO!!!\n");
+  }
+    
   return 0;
 }
