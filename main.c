@@ -303,64 +303,62 @@ int getSpaces(int m[7][7], int spaces[][2]) {
 // play(matriz, posição x, posição y, jogada, contador) --> Realiza as jogadas
 // recursivamente, ate finalizar o jogo
 int play(int m[7][7], Pilha *p, int y, int x, char playCode) {
-  int spaces[32][2];
-  int tam;
-  
-  // Fim de jogo valido
-  if (gameOver(m)){
-    printf("Total = %d\n",size(p));
-    while(!isEmpty(p)){
-      printf("-----------------------\n");
-      show(top(p));
-      printf("-----------------------\n");
-      pop(p);      
-    }
-    return 1;
-  }
-   
+    int spaces[32][2];
+    int tam;
 
-  //Caso nao consiga fazer uma jogada
-  else if(!movePin(m,playCode, y, x)){
-    return 0;
-  } 
-      
-  //Jogada valida
-  else {
-    push(p,m);
+    // Fim de jogo valido
+    if (gameOver(m)) {
+        printf("Total = %d\n", size(p));
+        while (!isEmpty(p)) {
+            printf("-----------------------\n");
+            show(top(p));
+            printf("-----------------------\n");
+            pop(p);
+        }
+        return 1;
+    }
+
+    // Tenta executar a jogada atual
+    if (!movePin(m, playCode, y, x)) {
+        return 0;  // Falha ao mover o pino
+    }
+
+    // Jogada válida, empilhar o estado atual do tabuleiro
+    push(p, m);
+
+    // Obtém todos os espaços vazios para novas jogadas
     tam = getSpaces(m, spaces);
     int aux;
 
-    //Para cada espaco, tenta executar uma das 4 jogadas possiveis
-    //Se foi possivel, mas gera um problema no futuro, reverte a jogada
-    for(int idx = 0; idx < tam; idx++){
-      aux = play(m, p,spaces[idx][0], spaces[idx][1], 'u');
-      if(aux == -1){
-        revertPlay(m,'u',spaces[idx][0], spaces[idx][1]);
-      }else if(aux==1) break;
-      
-      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'l');
-      if(aux == -1){
-        revertPlay(m,'l',spaces[idx][0], spaces[idx][1]);
-      }else if(aux==1) break;
-      
-      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'd');
-      if(aux == -1){
-        revertPlay(m,'d',spaces[idx][0], spaces[idx][1]);
-      }else if(aux==1) break;
-      
-      aux = play(m,p, spaces[idx][0], spaces[idx][1], 'r');
-      if(aux == -1){
-        revertPlay(m,'r',spaces[idx][0], spaces[idx][1]);
-      }else if(aux==1) break;
+    // Para cada espaço vazio, tenta as 4 direções possíveis ('u', 'l', 'd', 'r')
+    for (int idx = 0; idx < tam; idx++) {
+        // Tentar jogada para cima
+        aux = play(m, p, spaces[idx][0], spaces[idx][1], 'u');
+        if (aux == 1) return 1;  // Jogo concluído
+        else if (aux == -1) revertPlay(m, 'u', spaces[idx][0], spaces[idx][1]);
+
+        // Tentar jogada para esquerda
+        aux = play(m, p, spaces[idx][0], spaces[idx][1], 'l');
+        if (aux == 1) return 1;  // Jogo concluído
+        else if (aux == -1) revertPlay(m, 'l', spaces[idx][0], spaces[idx][1]);
+
+        // Tentar jogada para baixo
+        aux = play(m, p, spaces[idx][0], spaces[idx][1], 'd');
+        if (aux == 1) return 1;  // Jogo concluído
+        else if (aux == -1) revertPlay(m, 'd', spaces[idx][0], spaces[idx][1]);
+
+        // Tentar jogada para direita
+        aux = play(m, p, spaces[idx][0], spaces[idx][1], 'r');
+        if (aux == 1) return 1;  // Jogo concluído
+        else if (aux == -1) revertPlay(m, 'r', spaces[idx][0], spaces[idx][1]);
     }
-    // Fim de jogo invalido
-    if(gameOver(m) == 0){
-      pop(p);
-      return -1; 
-    }
-    else return 1; // Fim de jogo valido
-  }
+
+    // Se não encontrou solução, remover o estado atual da pilha
+    pop(p);
+    return -1;  // Fim de jogo inválido
 }
+
+
 
 int main() {
 

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include<unistd.h>
 
 #define MAX_LENGTH (1000)
 
@@ -25,7 +26,7 @@ int main() {
         {-1, -1, 1, 1, 1, -1, -1},
         {-1, -1, 1, 1, 1, -1, -1}};
     
-    if (play(mtrx) == 1) printf("Jogo Concluido!!!");
+    if (play(mtrx)) printf("Jogo Concluido!!!");
     else printf("Erro!!!");
 
     return 0;
@@ -46,6 +47,7 @@ int verify(int mtrx[7][7])
             }
         }
     }
+    //printf(">> total_pins: %d, (mtrx[3][3] == 1): %d, (total_pins == 1 && mtrx[3][3] == 1): %d \n", total_pins, mtrx[3][3] == 1, (total_pins == 1 && mtrx[3][3] == 1));
     return (total_pins == 1 && mtrx[3][3] == 1) ? 1 : 0;
 }
 
@@ -160,6 +162,8 @@ void show(int mtrx[7][7])
 }
 
 int play(int mtrx[7][7]) {
+
+    //printf("history_length: %d\n", history_length);
     
     if (verify(mtrx)) {
         return 1;
@@ -171,11 +175,12 @@ int play(int mtrx[7][7]) {
                 if (direction != 0) {
                     move_pin(mtrx, i, j, direction);
                     show(mtrx);
-                    if (play(mtrx)) return 1;
+                    // sleep(1);
+                    if (play(mtrx) == 1) return 1;
                     else undo_move(mtrx);
                 }
             }
         }
     }
-    return -1;
+    return 0;
 }
