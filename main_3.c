@@ -25,6 +25,8 @@ int main() {
         {1, 1, 1, 1, 1, 1, 1},
         {-1, -1, 1, 1, 1, -1, -1},
         {-1, -1, 1, 1, 1, -1, -1}};
+
+    show(mtrx);
     
     if (play(mtrx)) printf("Jogo Concluido!!!");
     else printf("Erro!!!");
@@ -114,7 +116,7 @@ int move_pin(int mtrx[7][7], int i, int j, int direction) {
 
     }
 
-    return -1;
+    return 0;
 
 }
 
@@ -144,7 +146,6 @@ int undo_move(int mtrx[7][7]) {
 
 void show(int mtrx[7][7])
 {
-
     for (int i = 0; i < 7; i++)
     {
         for (int j = 0; j < 7; j++)
@@ -169,15 +170,16 @@ int play(int mtrx[7][7]) {
         return 1;
 
     } else {
+        show(mtrx);
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 7; j++) {
                 int direction = move_is_valid(mtrx, i, j);
                 if (direction != 0) {
                     move_pin(mtrx, i, j, direction);
-                    show(mtrx);
-                    // sleep(1);
-                    if (play(mtrx) == 1) return 1;
-                    else undo_move(mtrx);
+                    sleep(1);
+                    if (play(mtrx) == 1) {
+                        return 1;
+                    } else undo_move(mtrx);
                 }
             }
         }
