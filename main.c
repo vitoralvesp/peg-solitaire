@@ -12,8 +12,8 @@
 
 #include <stdio.h>
 
-#define TAMANHO_MATRIZ 7
-#define MAX_MOVIMENTOS 31
+#define TAMANHO_MATRIZ (7)
+#define MAX_MOVIMENTOS (31)
 
 // Movimento
 typedef struct {
