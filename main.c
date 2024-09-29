@@ -9,177 +9,185 @@
  * 
  */
 
-
 #include <stdio.h>
+#include<unistd.h>
+#include <stdlib.h>
 
-#define TAMANHO_MATRIZ (7)
-#define MAX_MOVIMENTOS (31)
+#define MAX_LENGTH (31) 
 
-// Movimento
-typedef struct {
-    int coluna_inicial, linha_inicial;
-    int direcao;
-} Movimento;
+int history[MAX_LENGTH][7][7];
+int history_length;
+int moves_played = 0;
+int valid_moves = 0;
 
-// exibir(matriz) -> Exibe a matriz passada como argumento
-void exibir(int matriz[7][7]) {
-    for (int i = 0; i < 7; i++) {
-        for (int j = 0; j < 7; j++) {
-            if (matriz[i][j] == -1)
-                printf("#"); 
-            else if (matriz[i][j] == 1)
-                printf("o"); 
+int verify(int mtrx[7][7]);
+int move_is_valid(int mtrx[7][7], int i, int j, int direction);
+void move_pin(int mtrx[7][7], int i, int j, int direction);
+void add_to_history(int mtrx[7][7]);
+void show(int mtrx[7][7]);
+int play(int mtrx[7][7]);
+
+
+int main() {
+
+    // mtrx --> tabuleiro resta-um 7 x 7
+    int mtrx[7][7] = {
+        {-1, -1, 1, 1, 1, -1, -1},
+        {-1, -1, 1, 1, 1, -1, -1},
+        {1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 0, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1},
+        {-1, -1, 1, 1, 1, -1, -1},
+        {-1, -1, 1, 1, 1, -1, -1}};
+
+    printf("---\nINICIANDO O JOGO\nOBS: Demora uns segundos para comecar a imprimir.\n---\n");
+
+    if (play(mtrx)) {
+        for (int i = 0; i < history_length; i++)
+            show(history[i]);
+        show(mtrx);
+        printf(">> Jogo Concluido! %d movimentos validos de %d tentativas de movimentos \n",valid_moves, moves_played);
+    } else printf(">> Sem soluçao: %d tentativas de movimentos\n", moves_played);
+    
+    return 0;
+
+}
+
+// verify(tabuleiro) --> verifica se há apenas um pino no centro do tabuleiro
+int verify(int mtrx[7][7])
+{
+    int total_pins = 0;
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+            if (mtrx[i][j] == 1) total_pins++;
+    }
+    return (total_pins == 1 && mtrx[3][3] == 1) ? 1 : 0;
+}
+
+
+// move_is_valid(tabuleiro, pos. y, pos. x, direção) --> retorna 1 se o movimento é válido e 0 caso contrário
+int move_is_valid(int mtrx[7][7], int i, int j, int direction)
+{
+    if (i >= 0 && i < 7 && j >= 0 && j < 7 && mtrx[i][j] == 1) {
+        // movimento para cima
+        if (direction == 1) return (i > 1 && mtrx[i - 1][j] == 1 && mtrx[i - 2][j] == 0);
+
+        // movimento para baixo
+        if (direction == 2) return (i < 7 - 2 && mtrx[i + 1][j] == 1 && mtrx[i + 2][j] == 0);
+
+        // movimento para esquerda
+        if (direction == 3) return (j > 1 && mtrx[i][j - 1] == 1 && mtrx[i][j - 2] == 0);
+
+        // movimento para esquerda
+        if (direction == 4) return (j < 7 - 2 && mtrx[i][j + 1] == 1 && mtrx[i][j + 2] == 0);
+
+    }
+    return 0;
+ 
+}
+
+
+// move_pin(tabuleiro, pos. y, pos. x, direção) --> move o pino para cima, para baixo, para a esquerda ou para a direita.
+void move_pin(int mtrx[7][7], int i, int j, int direction) {
+    
+    mtrx[i][j] = 0;
+    if (direction == 1) {
+        mtrx[i - 1][j] = 0;
+        mtrx[i - 2][j] = 1;
+
+    } else if (direction == 2) {
+        mtrx[i + 1][j] = 0;
+        mtrx[i + 2][j] = 1;
+
+    } else if (direction == 3) {
+        mtrx[i][j - 1] = 0;
+        mtrx[i][j - 2] = 1;
+
+    } else if (direction == 4) {
+        mtrx[i][j + 1] = 0;
+        mtrx[i][j + 2] = 1;
+
+    }
+
+}
+
+
+// add_to_history(tabuleiro) --> adiciona uma jogada válida ao histórico de jogadas válidas
+void add_to_history(int mtrx[7][7]) {
+    if (history_length < MAX_LENGTH) {
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++)
+                history[history_length][i][j] = mtrx[i][j];
+        }
+        history_length++;
+
+    } else {
+        printf(">> Tamanho do histórico muito pequeno para o número de tentativas de jogadas...\n");
+        exit(1);
+    }
+}
+
+
+// undo_move(tabuleiro) --> atualiza o tabuleiro com a última jogada válida salvo no histórico de jogadas válidas
+int undo_move(int mtrx[7][7]) {
+    if (history_length > 0) {
+        history_length--;
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++)
+                mtrx[i][j] = history[history_length][i][j];
+        }
+    }
+    return 0;
+}
+
+
+// show(tabuleiro) --> imprime o tabuleiro; 1 é o pino, 0 é o espaço e -1 é a extremidade/limite do tabuleiro
+void show(int mtrx[7][7])
+{
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            if (mtrx[i][j] == -1)
+                printf("#");
+            else if (mtrx[i][j] == 0)
+                printf(" ");
             else
-                printf(" ");  
+                printf("o");
         }
         printf("\n");
     }
     printf("\n");
 }
 
-// fim_de_jogo(matriz) -> Verifica se existe apenas um pino e no centro do tabuleiro
-int fim_de_jogo(int matriz[7][7]) {
-    int count = 0;
-    for (int i = 0; i < 7; i++) {
-        for (int j = 0; j < 7; j++) {
-            if (matriz[i][j] == 1)
-                count++;
-        }
-    }
-    
-    return (count == 1 && matriz[3][3] == 1);
-}
 
-// move(matriz,coordenadas,movimentos,contador) -> Realiza um movimento no tabuleiro
-int mover(int matriz[7][7], int linha, int coluna, int dir, Movimento movimentos[], int *contador) {
-    int dLinha[] = {-2, 2, 0, 0};  // Direcoes verticais (cima, baixo)
-    int dColuna[] = {0, 0, -2, 2};  // Direcoes horizontais (esquerda, direita)
+// play(tabuleiro) --> função recursiva que utiliza backtracking para solucionar o jogo resta-um
+int play(int mtrx[7][7]) {
 
-    int nlinha = linha + dLinha[dir];
-    int nColuna = coluna + dColuna[dir];
-    
-    // Verifica se o movimento é valido
-    if (nlinha >= 0 && nlinha < 7 && nColuna >= 0 && nColuna < 7 && 
-        matriz[nlinha][nColuna] == 0 && matriz[linha + dLinha[dir]/2][coluna + dColuna[dir]/2] == 1) {
-        
-        // Executa o movimento
-        matriz[nlinha][nColuna] = 1;
-        matriz[linha + dLinha[dir]/2][coluna + dColuna[dir]/2] = 0;
-        matriz[linha][coluna] = 0;
+    if (verify(mtrx)) {
+        return 1;
 
-        // Armazena o movimento
-        movimentos[*contador].coluna_inicial = coluna;
-        movimentos[*contador].linha_inicial = linha;
-        movimentos[*contador].direcao = dir;
-        (*contador)++;
-
-        return 1;  // Movimento valido
-    }
-    return 0;  // Movimento invalido
-}
-
-// desfazer(matriz,linha,coluna,direcao,movimentos,contador) -> Desfaz o ultimo movimento feito
-void desfazer(int matriz[7][7], int linha, int coluna, int dir, Movimento movimentos[], int *contador) {
-    int dLinha[] = {-2, 2, 0, 0};  // direcoes verticais (cima, baixo)
-    int dColuna[] = {0, 0, -2, 2};  // direcoes horizontais (esquerda, direita)
-
-    //Calcula a posicao inicial do pino movido
-    int nlinha = linha + dLinha[dir];
-    int nColuna = coluna + dColuna[dir];
-
-    // Desfaz o movimento
-    matriz[nlinha][nColuna] = 0;
-    matriz[linha + dLinha[dir]/2][coluna + dColuna[dir]/2] = 1;
-    matriz[linha][coluna] = 1;
-    (*contador)--;
-}
-
-// resta_um(matriz,movimentos,contador,jogadas) -> Funcao principal que faz as jogadas
-int resta_um(int matriz[7][7], Movimento movimentos[], int *contador, int jogadas[MAX_MOVIMENTOS][7][7]) {
-    //Fim de jogo valido
-    if (fim_de_jogo(matriz)) {
-        return 1;  
-    }
-
-    // Caso geral: tentar uma jogada, encontrando um pino
-    for (int ln = 0; ln < 7; ln++) {
-        for (int col = 0; col < 7; col++) {
-            if (matriz[ln][col] == 1) { 
-                for (int dir = 0; dir < 4; dir++) {  // Tenta mover o pino nas 4 direcoes
-                    if (mover(matriz, ln, col, dir, movimentos, contador)) {
-                        
-                        // Armazena o movimento valido
-                        if (*contador < MAX_MOVIMENTOS) {
-                            for (int a = 0; a < 7; a++) {
-                                for (int b = 0; b < 7; b++) {
-                                    jogadas[*contador][a][b] = matriz[a][b];
-                                }
-                            }
+    } else {
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                if (mtrx[i][j] == 1) {
+                    // Tenta todos os movimentos possíveis para cada pino
+                    for (int direction = 1; direction <= 4; direction++) {
+                        if (move_is_valid(mtrx, i, j, direction)) {
+                            moves_played++;
+                            valid_moves++;
+                            add_to_history(mtrx);
+                            move_pin(mtrx, i, j, direction);
+                            if (play(mtrx))
+                                return 1;
+                            undo_move(mtrx);
+                            valid_moves--;
                         }
-
-                        //Caso a proxima jogada encerre o jogo, finaliza a chamada
-                        if (resta_um(matriz, movimentos, contador, jogadas)) {  
-                            return 1;
-                        }
-
-                        // Desfaz o movimento, se nao eh o caminho apropriado
-                        desfazer(matriz, ln, col, dir, movimentos, contador);
                     }
                 }
             }
         }
     }
-    return 0;  // Fim de jogo invalido
-}
-
-// mostrarJogadas(contador,jogadas) -> exibe cada jogada feita 
-void mostrarJogadas(int jogadas[MAX_MOVIMENTOS][7][7],int contador) {
-    for (int i = 0; i < contador; i++) {
-        printf("-------------------------------\n");
-        exibir(jogadas[i]);
-        printf("-------------------------------\n");
-    }
-}
-
-int main() {
-    // Tabuleiro inicial
-    int matriz[7][7] = {
-        {-1, -1, 1, 1, 1, -1, -1},
-        {-1, -1, 1, 1, 1, -1, -1},
-        { 1,  1, 1, 1, 1,  1,  1},
-        { 1,  1, 1, 0, 1,  1,  1},
-        { 1,  1, 1, 1, 1,  1,  1},
-        {-1, -1, 1, 1, 1, -1, -1},
-        {-1, -1, 1, 1, 1, -1, -1}
-    };
-
-    Movimento movimentos[MAX_MOVIMENTOS];  // Armazena os movimentos Cima,Baixo,Esquerda,Direita
-    int contMovimentos = 0; 
-    int jogadas[MAX_MOVIMENTOS][7][7];  // Armazena os tabuleiros com jogadas validas
-
-    printf("Tabuleiro inicial:\n");
-    exibir(matriz);
-
-    printf("O jogo pode demorar um pouco para comecar...\n");
-
-    // Salva o estado inicial do jogo
-    for (int a = 0; a < 7; a++) {
-        for (int b = 0; b < 7; b++) {
-            jogadas[contMovimentos][a][b] = matriz[a][b];
-        }
-    }
-
-    //Verifica se uma solucao foi encontrada
-    if (resta_um(matriz, movimentos, &contMovimentos, jogadas)) {
-        mostrarJogadas(jogadas,contMovimentos);
-
-        //Exibe a matriz resolvida
-        exibir(matriz);
-
-        printf("Total de jogadas: %d\n",contMovimentos);
-    } else {
-        printf("Nenhuma solução encontrada.\n");
-    }
-
     return 0;
 }
