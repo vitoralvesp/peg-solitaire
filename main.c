@@ -1,6 +1,15 @@
+/*
+ *
+ * Lucas Pires de Camargo Sarai - 10418013
+ * Vitor Alves Pereira - 10410862
+ * 
+ * Ciência da Computação
+ * 3D
+ * PAA2
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #define MAX_MATRIZES (31)
 #define TAMANHO_MATRIZ (7)
@@ -377,12 +386,6 @@ int main() {
   push(p,mtrx);
 
   show(top(p));
-  // int c = size(p);
-  // printf("Antes: %d\n",c);
-  // pop(p);
-  // c = size(p);
-  // printf("Depois: %d\n",c);
-
   int posX = 3, posY = 3;
 
   //Caso encerre corretamente, exiba
