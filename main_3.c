@@ -1,3 +1,14 @@
+/*
+ *
+ *  Lucas Pires de Camargo Sarai - 10418013
+ *  Vitor Alves Pereira - 10410862
+ * 
+ * Ciência da Computação
+ * 3D
+ * PAA2
+ * 
+ */
+
 #include <stdio.h>
 #include<unistd.h>
 
